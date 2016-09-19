@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:textSize="10sp"
+        android:id="@+id/mDownload"
+        android:text="下载" />
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="middle"
+        android:lines="1"
+        android:textColor="#FF2B2B2B"
+        android:text="下载地址"
+        android:layout_alignTop="@id/mDownload"
+        android:layout_alignBottom="@id/mDownload"
+        android:gravity="center_vertical"
+        android:layout_toLeftOf="@id/mDownload"
+        android:id="@+id/mAddress" />
+    <ProgressBar
+        android:layout_width="match_parent"
+        android:layout_height="2dp"
+        android:id="@+id/mProgress"
+        android:layout_below="@id/mAddress"
+        android:progress="2000"
+        android:max="10000"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_marginBottom="10dp"/>
+</RelativeLayout>

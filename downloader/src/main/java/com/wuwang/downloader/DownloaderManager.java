@@ -1,11 +1,6 @@
-/*
- *
- * DownloaderManager.java
- * 
- * Created by Wuwang on 2016/9/10
- * Copyright © 2016年 深圳哎吖科技. All rights reserved.
- */
 package com.wuwang.downloader;
+
+import android.os.AsyncTask;
 
 import com.wuwang.downloader.file.FileCache;
 
@@ -48,23 +43,37 @@ public class DownloaderManager {
     }
 
     //单线程单任务下载，开始下一个会取消上一个任务
-    public void download(final String url, DownloadListener listener){
-        Config config=getConfig();
-        if(config.recorder.isLock(url)){
-            if(listener!=null){
-                listener.onError(DownloadListener.ERR_LOCK);
+    public void download(final String url,final DownloadListener listener){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Config config=getConfig();
+                if(config.recorder.isLock(url)){
+                    if(listener!=null){
+                        listener.onError(DownloadListener.ERR_LOCK);
+                    }
+                    return;
+                }
+                if(singleDownloader!=null){
+                    singleDownloader.cancel();
+                }
+                config.recorder.lock(url);
+                if(singleDownloader!=null){
+                    singleDownloader.cancel();
+                }
+                singleDownloader=new DefaultDownloader(url,new FileCache(getConfig().seeker.seek(url)));
+                singleDownloader.setDownloadListener(listener);
+                singleDownloader.download();
+                config.recorder.unlock(url);
             }
-            return;
-        }
-        if(singleDownloader!=null){
-            singleDownloader.cancel();
-        }
-        config.recorder.lock(url);
-        singleDownloader=new DefaultDownloader(url,new FileCache(getConfig().seeker.seek(url)));
-        singleDownloader.setDownloadListener(listener);
-        singleDownloader.download();
-        config.recorder.unlock(url);
+        }).start();
     }
 
+    public void cancel(final String url){
+        Config config=getConfig();
+        if(config.recorder.isLock(url)&&singleDownloader!=null){
+            singleDownloader.cancel();
+        }
+    }
 
 }
