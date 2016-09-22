@@ -14,6 +14,7 @@ import android.util.Log;
 import com.wuwang.downloader.file.Cache;
 import com.wuwang.downloader.file.FileCache;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Target;
@@ -27,9 +28,9 @@ import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
 /**
  * Description:
  */
-public class AsyncDownloader extends AsyncTask<ITarget,Long,Integer> implements IDownloader,DownloadListener {
+public class AsyncDownloader extends AsyncTask<Boolean,Object,Integer> implements IDownloader,DownloadObserver{
 
-    private DownloadListener mDownloadListener;
+    private DownloadObserver mObserver;
     private boolean cancelFlag=false;
     private Source mSource;
     private Cache mCache;
@@ -41,7 +42,7 @@ public class AsyncDownloader extends AsyncTask<ITarget,Long,Integer> implements 
     }
 
     @Override
-    protected Integer doInBackground(ITarget... params) {
+    protected Integer doInBackground(Boolean... params) {
         downloadAct();
         return null;
     }
@@ -53,28 +54,27 @@ public class AsyncDownloader extends AsyncTask<ITarget,Long,Integer> implements 
             HttpURLConnection conn=openConnection(mCache.length());
             if(conn!=null){
                 InputStream inStream = conn.getInputStream();
-                onProgress(fileSize,mCache.length(),DownloadListener.START);
+                onStart(mCache.length(),fileSize);
                 byte[] buffer=new byte[4096];
                 int count;
                 while (!cancelFlag&&-1!=(count=inStream.read(buffer))){
                     mCache.append(buffer,count);
                     cacheSize=mCache.length();
-                    onProgress(fileSize,cacheSize,DownloadListener.DOWNLOADING);
+                    onProgress(cacheSize,fileSize);
                 }
                 if(!cancelFlag||cacheSize==fileSize){
                     mCache.close(true);
-                    onProgress(fileSize,cacheSize,DownloadListener.RENAME);
+                    onFinish(mCache,COMPLETED);
                 }else{
                     mCache.close(false);
-                    onProgress(fileSize,cacheSize,DownloadListener.CANCEL);
+                    onFinish(mCache,CANCLED);
                 }
-                Log.e("wuwang","下载完成->"+ Environment.getExternalStorageDirectory().getPath()+"/test.mp4");
             }
         } catch (IOException | DownloaderException e) {
             e.printStackTrace();
             try {
                 mCache.close(false);
-                onError(0);
+                onFinish(mCache,ERROR_UNKNOW);
             } catch (DownloaderException e1) {
                 e1.printStackTrace();
             }
@@ -82,13 +82,19 @@ public class AsyncDownloader extends AsyncTask<ITarget,Long,Integer> implements 
     }
 
     @Override
-    protected void onProgressUpdate(Long... values) {
+    protected void onProgressUpdate(Object... values) {
         super.onProgressUpdate(values);
-        if(mDownloadListener!=null){
-            if(values.length==2){
-                mDownloadListener.onError((int)(long)values[1]);
-            }else{
-                mDownloadListener.onProgress(values[0],values[1],(int)(long)values[2]);
+        if(mObserver!=null){
+            switch ((int)values[0]){
+                case 1:
+                    mObserver.onStart((long)values[1],(long)values[2]);
+                    break;
+                case 2:
+                    mObserver.onProgress((long)values[1],(long)values[2]);
+                    break;
+                case 3:
+                    mObserver.onFinish((Cache) values[1],(int)values[2]);
+                    break;
             }
         }
     }
@@ -97,28 +103,29 @@ public class AsyncDownloader extends AsyncTask<ITarget,Long,Integer> implements 
     public void download(Source source, Cache cache) {
         this.mSource=source;
         this.mCache=cache;
+        execute();
     }
 
     @Override
     public void cancel() {
-
+        cancelFlag=true;
     }
 
     @Override
-    public void setDownloadListener(DownloadListener listener) {
-        this.mDownloadListener=listener;
+    public void setDownloadObserver(DownloadObserver observer) {
+        this.mObserver=observer;
     }
 
     private boolean checkFileExit(){
         if(mCache.isComplete()){
-            if(mDownloadListener!=null){
+            if(mObserver!=null){
                 long length=-1;
                 try {
                     length=mCache.length();
                 } catch (DownloaderException e) {
                     e.printStackTrace();
                 }
-                mDownloadListener.onProgress(length,length,DownloadListener.START);
+                onStart(length,length);
             }
             return true;
         }
@@ -152,12 +159,18 @@ public class AsyncDownloader extends AsyncTask<ITarget,Long,Integer> implements 
     }
 
     @Override
-    public void onProgress(long sourceSize, long cacheSize, int state) {
-        publishProgress(sourceSize,cacheSize,(long)state);
+    public void onStart(long cacheSize, long totalSize) {
+        publishProgress(1,cacheSize,totalSize);
     }
 
     @Override
-    public void onError(int error) {
-        publishProgress(0L,(long)error);
+    public void onProgress(long cacheSize, long totalSize) {
+        publishProgress(2,cacheSize,totalSize);
     }
+
+    @Override
+    public void onFinish(Cache cache,int type) {
+        publishProgress(3,cache,type);
+    }
+
 }

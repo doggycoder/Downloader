@@ -8,12 +8,14 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.wuwang.downloader.DownloadListener;
+import com.wuwang.downloader.DownloadObserver;
 import com.wuwang.downloader.DownloaderManager;
+import com.wuwang.downloader.file.Cache;
 
 /**
  * Created by wuwang on 2016/9/16
  */
-public class DownloadHolder extends RecyclerView.ViewHolder implements View.OnClickListener, DownloadListener {
+public class DownloadHolder extends RecyclerView.ViewHolder implements View.OnClickListener, DownloadObserver {
 
     public TextView mAddress;
     public Button mDownload;
@@ -34,20 +36,6 @@ public class DownloadHolder extends RecyclerView.ViewHolder implements View.OnCl
         mDownload.setText(info.state.toString());
     }
 
-
-    @Override
-    public void onProgress(long sourceSize, long cacheSize, int state) {
-        if(state==RENAME){
-            info.state=DownloadState.COMPLETED;
-            mDownload.setText(info.state.toString());
-        }
-    }
-
-    @Override
-    public void onError(int error) {
-        Log.e("wuwang","error-->"+error);
-    }
-
     @Override
     public void onClick(View v) {
         switch (info.state){
@@ -65,4 +53,22 @@ public class DownloadHolder extends RecyclerView.ViewHolder implements View.OnCl
         }
         mDownload.setText(info.state.toString());
     }
+
+    @Override
+    public void onStart(long cacheSize, long totalSize) {
+        if(cacheSize==totalSize){
+
+        }
+    }
+
+    @Override
+    public void onProgress(long cacheSize, long totalSize) {
+        mProgress.setProgress((int)(cacheSize/(double)totalSize*10000));
+    }
+
+    @Override
+    public void onFinish(Cache cache,int type) {
+
+    }
+
 }

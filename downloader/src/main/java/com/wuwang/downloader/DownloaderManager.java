@@ -1,7 +1,9 @@
 package com.wuwang.downloader;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
+import com.wuwang.downloader.file.Cache;
 import com.wuwang.downloader.file.FileCache;
 
 /**
@@ -43,47 +45,56 @@ public class DownloaderManager {
     }
 
     //单线程单任务下载，开始下一个会取消上一个任务
-    public void download(final String url,final DownloadListener listener){
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Config config=getConfig();
-                if(config.recorder.isLock(url)){
-                    if(listener!=null){
-                        listener.onError(DownloadListener.ERR_LOCK);
-                    }
-                    return;
-                }
-                if(singleDownloader!=null){
-                    singleDownloader.cancel();
-                }
-                config.recorder.lock(url);
-                if(singleDownloader!=null){
-                    singleDownloader.cancel();
-                }
-                singleDownloader=new AsyncDownloader();
-                singleDownloader.setDownloadListener(listener);
-                singleDownloader.download(new Source() {
-                    @Override
-                    public String getUrl() {
-                        return url;
-                    }
-
-                    @Override
-                    public String getParams(String key) {
-                        return null;
-                    }
-                },new FileCache(getConfig().seeker.seek(url)));
-                config.recorder.unlock(url);
+    public void download(final String url,final DownloadObserver listener){
+        final Config config=getConfig();
+        if(config.recorder.isLock(url)){
+            if(listener!=null){
+                listener.onFinish(null,DownloadObserver.ERROR_LOCK);
             }
-        }).start();
+            return;
+        }
+        if(singleDownloader!=null){
+            singleDownloader.cancel();
+        }
+        config.recorder.lock(url);
+        if(singleDownloader!=null){
+            singleDownloader.cancel();
+        }
+        singleDownloader=new AsyncDownloader();
+        singleDownloader.setDownloadObserver(new DownloadObserver() {
+            @Override
+            public void onStart(long cacheSize, long totalSize) {
+                if(listener!=null){
+                    listener.onStart(cacheSize, totalSize);
+                }
+            }
+
+            @Override
+            public void onProgress(long cacheSize, long totalSize) {
+                if(listener!=null){
+                    listener.onProgress(cacheSize,totalSize);
+                }
+            }
+
+            @Override
+            public void onFinish(Cache cache, int type) {
+                config.recorder.unlock(url);
+                if(listener!=null){
+                    listener.onFinish(cache,type);
+                }
+            }
+        });
+        singleDownloader.download(new GetHttpSource(url),new FileCache(getConfig().seeker.seek(url)));
     }
 
     public void cancel(final String url){
         Config config=getConfig();
         if(config.recorder.isLock(url)&&singleDownloader!=null){
+            Log.e("wuwang","取消");
             singleDownloader.cancel();
         }
     }
+
+
 
 }

@@ -18,12 +18,22 @@ public class FileCache implements Cache {
     private static final String MIME=".cache";
 
     public FileCache(File file){
+        this.file=file;
+        File parent=file.getParentFile();
+        if(!parent.exists()){
+            parent.mkdirs();
+        }
+        this.file=file.exists()?file:new File(parent,file.getName()+MIME);
         try {
-            File parent=file.getParentFile();
-            if(!parent.exists()){
-                parent.mkdirs();
-            }
-            this.file=file.exists()?file:new File(parent,file.getName()+MIME);
+            open();
+        } catch (DownloaderException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void open() throws DownloaderException {
+        try {
             this.dataFile=new RandomAccessFile(this.file,this.file.getName().endsWith(MIME)?"rw":"r");
         } catch (FileNotFoundException e) {
             try {
@@ -34,6 +44,7 @@ public class FileCache implements Cache {
             e.printStackTrace();
         }
     }
+
 
     @Override
     public synchronized long length() throws DownloaderException {
@@ -85,6 +96,11 @@ public class FileCache implements Cache {
         } catch (IOException e) {
             throw new DownloaderException("file close error",e);
         }
+    }
+
+    @Override
+    public boolean delete() {
+        return !(file != null && file.exists()) || file.delete();
     }
 
     @Override

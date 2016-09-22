@@ -17,6 +17,6 @@ public interface IDownloader {
 
     void download(Source source, Cache cache);
     void cancel();
-    void setDownloadListener(DownloadListener listener);
+    void setDownloadObserver(DownloadObserver observer);
 
 }
