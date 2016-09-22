@@ -12,7 +12,7 @@ public class DownloaderManager {
 
     private static DownloaderManager manager;
     private Config config;
-    private ADownloader singleDownloader;
+    private IDownloader singleDownloader;
 
     private DownloaderManager(){
 
@@ -61,9 +61,19 @@ public class DownloaderManager {
                 if(singleDownloader!=null){
                     singleDownloader.cancel();
                 }
-                singleDownloader=new DefaultDownloader(url,new FileCache(getConfig().seeker.seek(url)));
+                singleDownloader=new AsyncDownloader();
                 singleDownloader.setDownloadListener(listener);
-                singleDownloader.download();
+                singleDownloader.download(new Source() {
+                    @Override
+                    public String getUrl() {
+                        return url;
+                    }
+
+                    @Override
+                    public String getParams(String key) {
+                        return null;
+                    }
+                },new FileCache(getConfig().seeker.seek(url)));
                 config.recorder.unlock(url);
             }
         }).start();
