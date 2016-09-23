@@ -5,10 +5,11 @@
  * Created by Wuwang on 2016/9/22
  * Copyright © 2016年 深圳哎吖科技. All rights reserved.
  */
-package com.wuwang.downloader;
+package com.wuwang.downloader.abs;
 
 
-import com.wuwang.downloader.file.Cache;
+import com.wuwang.frame.Cache;
+import com.wuwang.frame.Source;
 
 /**
  * Description:

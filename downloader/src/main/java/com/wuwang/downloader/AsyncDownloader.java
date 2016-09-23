@@ -8,16 +8,16 @@
 package com.wuwang.downloader;
 
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.util.Log;
 
-import com.wuwang.downloader.file.Cache;
-import com.wuwang.downloader.file.FileCache;
+import com.wuwang.downloader.abs.DownloadObserver;
+import com.wuwang.downloader.abs.IDownloader;
+import com.wuwang.exception.CacheException;
+import com.wuwang.frame.Cache;
+import com.wuwang.frame.Source;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.annotation.Target;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
@@ -28,7 +28,7 @@ import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
 /**
  * Description:
  */
-public class AsyncDownloader extends AsyncTask<Boolean,Object,Integer> implements IDownloader,DownloadObserver{
+public class AsyncDownloader extends AsyncTask<Boolean,Object,Integer> implements IDownloader,DownloadObserver {
 
     private DownloadObserver mObserver;
     private boolean cancelFlag=false;
@@ -70,12 +70,12 @@ public class AsyncDownloader extends AsyncTask<Boolean,Object,Integer> implement
                     onFinish(mCache,CANCLED);
                 }
             }
-        } catch (IOException | DownloaderException e) {
+        } catch (IOException | CacheException e) {
             e.printStackTrace();
             try {
                 mCache.close(false);
                 onFinish(mCache,ERROR_UNKNOW);
-            } catch (DownloaderException e1) {
+            } catch (CacheException e1) {
                 e1.printStackTrace();
             }
         }
@@ -122,7 +122,7 @@ public class AsyncDownloader extends AsyncTask<Boolean,Object,Integer> implement
                 long length=-1;
                 try {
                     length=mCache.length();
-                } catch (DownloaderException e) {
+                } catch (CacheException e) {
                     e.printStackTrace();
                 }
                 onStart(length,length);

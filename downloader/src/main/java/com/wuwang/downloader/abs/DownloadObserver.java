@@ -1,6 +1,6 @@
-package com.wuwang.downloader;
+package com.wuwang.downloader.abs;
 
-import com.wuwang.downloader.file.Cache;
+import com.wuwang.frame.Cache;
 
 /**
  * Created by wuwang on 2016/9/22

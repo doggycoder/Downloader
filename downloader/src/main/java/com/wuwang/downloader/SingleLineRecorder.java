@@ -1,4 +1,6 @@
-package com.wuwang.downloader.file;
+package com.wuwang.downloader;
+
+import com.wuwang.frame.IRecorder;
 
 /**
  * Description: 单线程的下载记录器

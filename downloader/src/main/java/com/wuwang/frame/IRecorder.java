@@ -1,7 +1,7 @@
-package com.wuwang.downloader.file;
+package com.wuwang.frame;
 
 /**
- * Description: 下载记录器
+ * Description: 记录器
  */
 public interface IRecorder {
 

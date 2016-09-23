@@ -1,5 +1,7 @@
 package com.wuwang.downloader;
 
+import com.wuwang.frame.Source;
+
 /**
  * Created by wuwang on 2016/9/22
  */

@@ -3,10 +3,10 @@ package com.wuwang.downloader;
 import android.os.Environment;
 import android.util.Log;
 
-import com.wuwang.downloader.file.Changer;
-import com.wuwang.downloader.file.IRecorder;
-import com.wuwang.downloader.file.Seeker;
-import com.wuwang.downloader.file.SingleLineRecorder;
+import com.wuwang.downloader.abs.NameChanger;
+import com.wuwang.exception.CacheException;
+import com.wuwang.frame.IRecorder;
+import com.wuwang.frame.Seeker;
 
 import java.io.File;
 
@@ -15,12 +15,12 @@ import java.io.File;
  */
 public class Config {
 
-    public final Changer<String> nameChanger;
+    public final NameChanger nameChanger;
     public final Seeker<String,File> seeker;
     public final String downloadPath;
     public final IRecorder recorder;
 
-    private Config(Changer<String> nameChanger, Seeker<String,File> seeker, String downloadPath, IRecorder recorder){
+    private Config(NameChanger nameChanger, Seeker<String,File> seeker, String downloadPath, IRecorder recorder){
         this.downloadPath=checkNotNull(downloadPath);
         this.nameChanger=checkNotNull(nameChanger);
         this.seeker=checkNotNull(seeker);
@@ -29,12 +29,12 @@ public class Config {
 
     public static class Builder{
 
-        private Changer<String> nameChanger;
+        private NameChanger nameChanger;
         private Seeker<String,File> seeker;
         private String downloadPath;
         private IRecorder recorder;
 
-        public Builder setNameChanger(Changer<String> nameChanger){
+        public Builder setNameChanger(NameChanger nameChanger){
             this.nameChanger=nameChanger;
             return this;
         }
@@ -68,8 +68,8 @@ public class Config {
                 boolean b=file.mkdirs();
                 if(!b){
                     try {
-                        throw new DownloaderException("please check your permission android.permission.WRITE_EXTERNAL_STORAGE");
-                    } catch (DownloaderException e) {
+                        throw new CacheException("please check your permission android.permission.WRITE_EXTERNAL_STORAGE");
+                    } catch (CacheException e) {
                         e.printStackTrace();
                     }
                 }else{
@@ -82,9 +82,9 @@ public class Config {
         return downloadPath;
     }
 
-    private Changer<String> checkNotNull(Changer<String> nameChanger){
+    private NameChanger checkNotNull(NameChanger nameChanger){
         if(nameChanger==null){
-            nameChanger=new Changer<String>() {
+            nameChanger=new NameChanger() {
                 @Override
                 public String change(String s) {
                     return s.substring(s.lastIndexOf("/"));

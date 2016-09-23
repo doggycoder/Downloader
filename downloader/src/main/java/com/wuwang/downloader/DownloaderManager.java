@@ -1,14 +1,14 @@
 package com.wuwang.downloader;
 
-import android.os.AsyncTask;
 import android.util.Log;
 
-import com.wuwang.downloader.file.Cache;
-import com.wuwang.downloader.file.FileCache;
+import com.wuwang.downloader.abs.DownloadObserver;
+import com.wuwang.downloader.abs.IDownloader;
+import com.wuwang.frame.Cache;
 
 /**
  * Description: 文件下载管理，也是文件下载的入口。
- * 单例模式，一个应用中只有一个下载管理器。下载管理器用于管理所有的现在任务{@link ADownloader}.
+ * 单例模式，一个应用中只有一个下载管理器。
  */
 public class DownloaderManager {
 

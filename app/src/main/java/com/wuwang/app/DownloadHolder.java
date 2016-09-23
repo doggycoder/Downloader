@@ -1,16 +1,14 @@
 package com.wuwang.app;
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.wuwang.downloader.DownloadListener;
-import com.wuwang.downloader.DownloadObserver;
+import com.wuwang.downloader.abs.DownloadObserver;
 import com.wuwang.downloader.DownloaderManager;
-import com.wuwang.downloader.file.Cache;
+import com.wuwang.frame.Cache;
 
 /**
  * Created by wuwang on 2016/9/16
