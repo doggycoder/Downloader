@@ -7,10 +7,19 @@
  */
 package com.wuwang.frame;
 
+import com.wuwang.exception.SourceException;
+
 /**
  * Description: 资源
  */
 public interface Source {
-    String getUrl();
-    String getParams(String key);
+
+    void open(long offset) throws SourceException;
+
+    long length();
+
+    int read(byte[] buffer) throws SourceException;
+
+    void close() throws SourceException;
+
 }

@@ -5,26 +5,23 @@ import android.util.Log;
 
 import com.wuwang.downloader.abs.NameChanger;
 import com.wuwang.exception.CacheException;
-import com.wuwang.frame.IRecorder;
 import com.wuwang.frame.Seeker;
 
 import java.io.File;
 
 /**
- * Description:
+ * Description: 下载管理器配置
  */
 public class Config {
 
     public final NameChanger nameChanger;
     public final Seeker<String,File> seeker;
     public final String downloadPath;
-    public final IRecorder recorder;
 
-    private Config(NameChanger nameChanger, Seeker<String,File> seeker, String downloadPath, IRecorder recorder){
+    private Config(NameChanger nameChanger, Seeker<String,File> seeker, String downloadPath){
         this.downloadPath=checkNotNull(downloadPath);
         this.nameChanger=checkNotNull(nameChanger);
         this.seeker=checkNotNull(seeker);
-        this.recorder=checkNotNull(recorder);
     }
 
     public static class Builder{
@@ -32,7 +29,6 @@ public class Config {
         private NameChanger nameChanger;
         private Seeker<String,File> seeker;
         private String downloadPath;
-        private IRecorder recorder;
 
         public Builder setNameChanger(NameChanger nameChanger){
             this.nameChanger=nameChanger;
@@ -49,13 +45,8 @@ public class Config {
             return this;
         }
 
-        public Builder setRecorder(IRecorder recorder){
-            this.recorder=recorder;
-            return this;
-        }
-
         public Config build(){
-            return new Config(nameChanger,seeker,downloadPath,recorder);
+            return new Config(nameChanger,seeker,downloadPath);
         }
 
     }
@@ -84,12 +75,7 @@ public class Config {
 
     private NameChanger checkNotNull(NameChanger nameChanger){
         if(nameChanger==null){
-            nameChanger=new NameChanger() {
-                @Override
-                public String change(String s) {
-                    return s.substring(s.lastIndexOf("/"));
-                }
-            };
+            nameChanger=new DefaultNameChanger();
         }
         return nameChanger;
     }
@@ -105,13 +91,6 @@ public class Config {
             };
         }
         return seeker;
-    }
-
-    private IRecorder checkNotNull(IRecorder recorder){
-        if(recorder==null){
-            recorder=new SingleLineRecorder();
-        }
-        return recorder;
     }
 
 }

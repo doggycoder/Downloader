@@ -8,22 +8,13 @@
 package com.wuwang.downloader;
 
 import android.os.AsyncTask;
-import android.util.Log;
 
 import com.wuwang.downloader.abs.DownloadObserver;
 import com.wuwang.downloader.abs.IDownloader;
 import com.wuwang.exception.CacheException;
+import com.wuwang.exception.SourceException;
 import com.wuwang.frame.Cache;
 import com.wuwang.frame.Source;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-
-import static java.net.HttpURLConnection.HTTP_MOVED_PERM;
-import static java.net.HttpURLConnection.HTTP_MOVED_TEMP;
-import static java.net.HttpURLConnection.HTTP_SEE_OTHER;
 
 /**
  * Description:
@@ -51,32 +42,32 @@ public class AsyncDownloader extends AsyncTask<Boolean,Object,Integer> implement
         cancelFlag=false;
         if(checkFileExit())return;
         try {
-            HttpURLConnection conn=openConnection(mCache.length());
-            if(conn!=null){
-                InputStream inStream = conn.getInputStream();
-                onStart(mCache.length(),fileSize);
-                byte[] buffer=new byte[4096];
-                int count;
-                while (!cancelFlag&&-1!=(count=inStream.read(buffer))){
-                    mCache.append(buffer,count);
-                    cacheSize=mCache.length();
-                    onProgress(cacheSize,fileSize);
-                }
-                if(!cancelFlag||cacheSize==fileSize){
-                    mCache.close(true);
-                    onFinish(mCache,COMPLETED);
-                }else{
-                    mCache.close(false);
-                    onFinish(mCache,CANCLED);
-                }
+            mSource.open(mCache.length());
+            fileSize=mSource.length();
+            onStart(mCache.length(),fileSize);
+            byte[] buffer=new byte[4096];
+            int count;
+            while (!cancelFlag&&-1!=(count=mSource.read(buffer))){
+                mCache.append(buffer,count);
+                cacheSize=mCache.length();
+                onProgress(cacheSize,fileSize);
             }
-        } catch (IOException | CacheException e) {
+            if(!cancelFlag||cacheSize==fileSize){
+                mCache.close(true);
+                onFinish(mCache,COMPLETED);
+            }else{
+                mCache.close(false);
+                onFinish(mCache,CANCLED);
+            }
+        } catch (SourceException | CacheException e) {
             e.printStackTrace();
             try {
+                mSource.close();
                 mCache.close(false);
-                onFinish(mCache,ERROR_UNKNOW);
-            } catch (CacheException e1) {
+            } catch (CacheException | SourceException e1) {
                 e1.printStackTrace();
+            }finally {
+                onFinish(mCache,ERROR_UNKNOW);
             }
         }
     }
@@ -130,32 +121,6 @@ public class AsyncDownloader extends AsyncTask<Boolean,Object,Integer> implement
             return true;
         }
         return false;
-    }
-
-    private HttpURLConnection openConnection(long offset){
-        try {
-            URL httpUrl=new URL(mSource.getUrl());
-            HttpURLConnection conn= (HttpURLConnection) httpUrl.openConnection();
-            conn.setConnectTimeout(15000);
-            conn.setReadTimeout(15000);
-            conn.setRequestProperty("Accept","*/*");
-            if(offset>0){
-                conn.setRequestProperty("Range","bytes="+offset+"-");
-            }
-            conn.connect();
-            int code = conn.getResponseCode();
-            boolean redirected = code == HTTP_MOVED_PERM || code == HTTP_MOVED_TEMP || code == HTTP_SEE_OTHER;
-            Log.e("wuwang","http->Response Code:"+code);
-            Log.e("wuwang","http->Content-Length:"+conn.getContentLength());
-            fileSize=offset+conn.getContentLength();
-            if(redirected){
-                //重定向
-            }
-            return conn;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     @Override

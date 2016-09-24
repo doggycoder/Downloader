@@ -9,14 +9,15 @@ package com.wuwang.downloader.abs;
 
 
 import com.wuwang.frame.Cache;
+import com.wuwang.frame.Seeker;
 import com.wuwang.frame.Source;
 
 /**
- * Description:
+ * Description: 下载器接口
  */
 public interface IDownloader {
 
-    void download(Source source, Cache cache);
+    void download(Source source,Cache cache);
     void cancel();
     void setDownloadObserver(DownloadObserver observer);
 

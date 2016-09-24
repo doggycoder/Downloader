@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.concurrent.ThreadPoolExecutor;
+
 /**
  * Created by wuwang on 2016/9/15
  */
@@ -19,6 +21,7 @@ public class BaseListDownloadDemoActivity extends AppCompatActivity {
     public Button mAdd;
     public EditText mAddress;
     private DownloadListAdapter adapter;
+    private ThreadPoolExecutor threadPoolExecutor;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

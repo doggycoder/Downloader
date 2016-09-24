@@ -53,7 +53,7 @@ public class FileCache implements Cache {
             try {
                 return dataFile.length();
             } catch (IOException e) {
-                throw new CacheException("",e);
+                throw new CacheException("Cache get length failed",e);
             }
         }
         return 0;
@@ -65,7 +65,7 @@ public class FileCache implements Cache {
             dataFile.seek(start);
             return dataFile.read(buffer,0,length);
         } catch (IOException e) {
-            throw new CacheException("file read error",e);
+            throw new CacheException("Cache read error",e);
         }
     }
 
@@ -75,7 +75,7 @@ public class FileCache implements Cache {
             dataFile.seek(length());
             dataFile.write(data,0,length);
         } catch (IOException e) {
-            throw new CacheException("append error",e);
+            throw new CacheException("Cache append failed",e);
         }
     }
 
@@ -89,13 +89,13 @@ public class FileCache implements Cache {
                 file.delete();  //下载完成删除临时文件
                 file=completeFile;
             }else{
-                throw new CacheException("file rename error");
+                throw new CacheException("Cache rename error");
             }
         }
         try {
             dataFile.close();
         } catch (IOException e) {
-            throw new CacheException("file close error",e);
+            throw new CacheException("Cache close error",e);
         }
     }
 
